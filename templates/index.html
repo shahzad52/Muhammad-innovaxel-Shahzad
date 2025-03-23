@@ -7,24 +7,29 @@
 </head>
 <body>
     <h1>URL Shortener</h1>
+
+    <!-- Shorten URL Form -->
     <form id="shortenForm">
         <input type="url" id="urlInput" placeholder="Enter a long URL" required>
         <button type="submit">Shorten URL</button>
     </form>
     <div id="result"></div>
 
+    <!-- Get Stats Form -->
     <form id="statsForm">
         <input type="text" id="statsShortCodeInput" placeholder="Enter short code" required>
         <button type="submit">Get Stats</button>
     </form>
     <div id="statsResult"></div>
 
+    <!-- Delete URL Form -->
     <form id="deleteForm">
         <input type="text" id="deleteShortCodeInput" placeholder="Enter short code" required>
         <button type="submit">Delete URL</button>
     </form>
     <div id="deleteResult"></div>
 
+    <!-- Update URL Form -->
     <form id="updateForm">
         <input type="text" id="updateShortCodeInput" placeholder="Enter short code" required>
         <input type="url" id="updateUrlInput" placeholder="Enter new URL" required>
@@ -33,6 +38,7 @@
     <div id="updateResult"></div>
 
     <script>
+        // Shorten URL
         document.getElementById('shortenForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('urlInput').value;
@@ -56,6 +62,7 @@
             }
         });
 
+        // Get Stats
         document.getElementById('statsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const shortCode = document.getElementById('statsShortCodeInput').value;
@@ -78,6 +85,7 @@
             }
         });
 
+        // Delete URL
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const shortCode = document.getElementById('deleteShortCodeInput').value;
@@ -92,6 +100,7 @@
             }
         });
 
+        // Update URL
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const shortCode = document.getElementById('updateShortCodeInput').value;
