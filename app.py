@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 from pymongo import MongoClient
 import random
 import string
@@ -32,6 +32,27 @@ def create_short_url():
     result = urls_collection.insert_one(url_data)
 
     return jsonify({"id": str(result.inserted_id), "shortCode": short_code}), 201
+
+@app.route('/<short_code>', methods=['GET'])
+def redirect_to_url(short_code):
+    url_data = urls_collection.find_one({"shortCode": short_code})
+    if not url_data:
+        return jsonify({"error": "Short URL not found"}), 404
+
+    urls_collection.update_one({"shortCode": short_code}, {"$inc": {"accessCount": 1}})
+    return redirect(url_data["url"])
+
+@app.route('/shorten/<short_code>', methods=['GET'])
+def get_url_details(short_code):
+    url_data = urls_collection.find_one({"shortCode": short_code})
+    if not url_data:
+        return jsonify({"error": "Short URL not found"}), 404
+
+    return jsonify({
+        "url": url_data["url"],
+        "shortCode": url_data["shortCode"],
+        "accessCount": url_data["accessCount"]
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

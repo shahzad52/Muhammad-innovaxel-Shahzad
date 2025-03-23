@@ -13,6 +13,12 @@
     </form>
     <div id="result"></div>
 
+    <form id="statsForm">
+        <input type="text" id="statsShortCodeInput" placeholder="Enter short code" required>
+        <button type="submit">Get Stats</button>
+    </form>
+    <div id="statsResult"></div>
+
     <script>
         document.getElementById('shortenForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -29,6 +35,20 @@
                 document.getElementById('result').innerText = `Shortened URL: ${data.shortCode}`;
             } else {
                 document.getElementById('result').innerText = `Error: ${data.error}`;
+            }
+        });
+
+        document.getElementById('statsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const shortCode = document.getElementById('statsShortCodeInput').value;
+
+            const response = await fetch(`/shorten/${shortCode}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('statsResult').innerText = `URL: ${data.url}, Access Count: ${data.accessCount}`;
+            } else {
+                document.getElementById('statsResult').innerText = `Error: ${data.error}`;
             }
         });
     </script>
