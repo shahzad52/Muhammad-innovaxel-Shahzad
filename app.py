@@ -54,5 +54,13 @@ def get_url_details(short_code):
         "accessCount": url_data["accessCount"]
     }), 200
 
+@app.route('/shorten/<short_code>', methods=['DELETE'])
+def delete_short_url(short_code):
+    result = urls_collection.delete_one({"shortCode": short_code})
+    if result.deleted_count == 0:
+        return jsonify({"error": "Short URL not found"}), 404
+
+    return '', 204
+
 if __name__ == '__main__':
     app.run(debug=True)

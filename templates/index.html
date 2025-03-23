@@ -19,6 +19,12 @@
     </form>
     <div id="statsResult"></div>
 
+    <form id="deleteForm">
+        <input type="text" id="deleteShortCodeInput" placeholder="Enter short code" required>
+        <button type="submit">Delete URL</button>
+    </form>
+    <div id="deleteResult"></div>
+
     <script>
         document.getElementById('shortenForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -49,6 +55,20 @@
                 document.getElementById('statsResult').innerText = `URL: ${data.url}, Access Count: ${data.accessCount}`;
             } else {
                 document.getElementById('statsResult').innerText = `Error: ${data.error}`;
+            }
+        });
+
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const shortCode = document.getElementById('deleteShortCodeInput').value;
+
+            const response = await fetch(`/shorten/${shortCode}`, { method: 'DELETE' });
+
+            if (response.ok) {
+                document.getElementById('deleteResult').innerText = 'URL deleted successfully';
+            } else {
+                const data = await response.json();
+                document.getElementById('deleteResult').innerText = `Error: ${data.error}`;
             }
         });
     </script>
