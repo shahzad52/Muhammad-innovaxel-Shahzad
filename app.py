@@ -56,7 +56,7 @@ def create_short_url():
 
     short_code = generate_short_code()
     current_time = datetime.utcnow()
-    
+
     url_data = {
         "id": get_next_sequence_value(),
         "url": original_url,
@@ -65,14 +65,14 @@ def create_short_url():
         "createdAt": current_time,
         "updatedAt": current_time
     }
-    result = urls_collection.insert_one(url_data)
+    urls_collection.insert_one(url_data)
 
     return jsonify({
-        "id": str(result.inserted_id),
+        "id": url_data["id"],
         "url": original_url,
         "shortCode": short_code,
-        "createdAt": current_time,
-        "updatedAt": current_time
+        "createdAt": current_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updatedAt": current_time.strftime("%Y-%m-%dT%H:%M:%SZ")
     }), 201
 
 @app.route('/<short_code>', methods=['GET'])
@@ -91,11 +91,11 @@ def get_url_details(short_code):
         return jsonify({"error": "Short URL not found"}), 404
 
     return jsonify({
-        "id": url_data["id"],  # Auto-incremented integer ID
+        "id": url_data["id"],
         "url": url_data["url"],
         "shortCode": url_data["shortCode"],
-        "createdAt": url_data["createdAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),  # ISO 8601 format
-        "updatedAt": url_data["updatedAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),  # ISO 8601 format
+        "createdAt": url_data["createdAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updatedAt": url_data["updatedAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
         "accessCount": url_data["accessCount"]
     }), 200
 
@@ -129,13 +129,28 @@ def update_short_url(short_code):
     if result.matched_count == 0:
         return jsonify({"error": "Short URL not found"}), 404
 
-    url_data = find_url_by_short_code(short_code)
+    url_data = urls_collection.find_one({"shortCode": short_code})
     return jsonify({
-        "id": str(url_data["_id"]),
+        "id": url_data["id"],
         "url": url_data["url"],
         "shortCode": url_data["shortCode"],
-        "createdAt": url_data["createdAt"],
-        "updatedAt": current_time,
+        "createdAt": url_data["createdAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updatedAt": current_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "accessCount": url_data["accessCount"]
+    }), 200
+
+@app.route('/shorten/<short_code>/stats', methods=['GET'])
+def get_url_statistics(short_code):
+    url_data = urls_collection.find_one({"shortCode": short_code})
+    if not url_data:
+        return jsonify({"error": "Short URL not found"}), 404
+
+    return jsonify({
+        "id": url_data["id"],
+        "url": url_data["url"],
+        "shortCode": url_data["shortCode"],
+        "createdAt": url_data["createdAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updatedAt": url_data["updatedAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
         "accessCount": url_data["accessCount"]
     }), 200
 
