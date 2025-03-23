@@ -6,6 +6,31 @@
     <title>URL Shortener</title>
 </head>
 <body>
-    <h1>Welcome to URL Shortener</h1>
+    <h1>URL Shortener</h1>
+    <form id="shortenForm">
+        <input type="url" id="urlInput" placeholder="Enter a long URL" required>
+        <button type="submit">Shorten URL</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('result').innerText = `Shortened URL: ${data.shortCode}`;
+            } else {
+                document.getElementById('result').innerText = `Error: ${data.error}`;
+            }
+        });
+    </script>
 </body>
 </html>
