@@ -44,8 +44,13 @@
             });
 
             const data = await response.json();
+
             if (response.ok) {
-                document.getElementById('result').innerText = `Shortened URL: ${data.shortCode}`;
+                // Display the shortened URL as a clickable link
+                const shortenedUrl = `${window.location.origin}/${data.shortCode}`;
+                document.getElementById('result').innerHTML = `
+                    <p>Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a></p>
+                `;
             } else {
                 document.getElementById('result').innerText = `Error: ${data.error}`;
             }
