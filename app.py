@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect
 from pymongo import MongoClient
 import random
 import string
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -10,7 +11,7 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["url_shortener"]
 urls_collection = db["urls"]
 
-# Add these helper functions after MongoDB connection setup
+# Added helper functions 
 def find_url_by_short_code(short_code):
     """Find a URL document by its short code"""
     return urls_collection.find_one({"shortCode": short_code})
@@ -44,7 +45,12 @@ def create_short_url():
         return jsonify({"error": "URL is required"}), 400
 
     short_code = generate_short_code()
-    url_data = {"url": original_url, "shortCode": short_code, "accessCount": 0}
+    url_data = {
+        "url": original_url,
+        "shortCode": short_code,
+        "accessCount": 0,
+        "createdAt": datetime.utcnow()
+    }
     result = urls_collection.insert_one(url_data)
 
     return jsonify({"id": str(result.inserted_id), "shortCode": short_code}), 201
