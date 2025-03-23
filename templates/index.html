@@ -25,6 +25,13 @@
     </form>
     <div id="deleteResult"></div>
 
+    <form id="updateForm">
+        <input type="text" id="updateShortCodeInput" placeholder="Enter short code" required>
+        <input type="url" id="updateUrlInput" placeholder="Enter new URL" required>
+        <button type="submit">Update URL</button>
+    </form>
+    <div id="updateResult"></div>
+
     <script>
         document.getElementById('shortenForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -52,7 +59,15 @@
             const data = await response.json();
 
             if (response.ok) {
-                document.getElementById('statsResult').innerText = `URL: ${data.url}, Access Count: ${data.accessCount}`;
+                // Display all fields returned by the backend
+                document.getElementById('statsResult').innerHTML = `
+                    <p><strong>ID:</strong> ${data.id}</p>
+                    <p><strong>URL:</strong> ${data.url}</p>
+                    <p><strong>Short Code:</strong> ${data.shortCode}</p>
+                    <p><strong>Created At:</strong> ${data.createdAt}</p>
+                    <p><strong>Updated At:</strong> ${data.updatedAt}</p>
+                    <p><strong>Access Count:</strong> ${data.accessCount}</p>
+                `;
             } else {
                 document.getElementById('statsResult').innerText = `Error: ${data.error}`;
             }
@@ -69,6 +84,25 @@
             } else {
                 const data = await response.json();
                 document.getElementById('deleteResult').innerText = `Error: ${data.error}`;
+            }
+        });
+
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const shortCode = document.getElementById('updateShortCodeInput').value;
+            const newUrl = document.getElementById('updateUrlInput').value;
+
+            const response = await fetch(`/shorten/${shortCode}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: newUrl })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('updateResult').innerText = 'URL updated successfully';
+            } else {
+                document.getElementById('updateResult').innerText = `Error: ${data.error}`;
             }
         });
     </script>

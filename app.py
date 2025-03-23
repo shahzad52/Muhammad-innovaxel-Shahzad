@@ -32,6 +32,16 @@ def generate_short_code(length=6):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choices(characters, k=length))
 
+# First, add a helper function for getting next ID
+def get_next_sequence_value():
+    sequence_document = db.counters.find_one_and_update(
+        {"_id": "url_id"},
+        {"$inc": {"sequence_value": 1}},
+        upsert=True,
+        return_document=True
+    )
+    return sequence_document.get("sequence_value", 1)
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -45,15 +55,25 @@ def create_short_url():
         return jsonify({"error": "URL is required"}), 400
 
     short_code = generate_short_code()
+    current_time = datetime.utcnow()
+    
     url_data = {
+        "id": get_next_sequence_value(),
         "url": original_url,
         "shortCode": short_code,
         "accessCount": 0,
-        "createdAt": datetime.utcnow()
+        "createdAt": current_time,
+        "updatedAt": current_time
     }
     result = urls_collection.insert_one(url_data)
 
-    return jsonify({"id": str(result.inserted_id), "shortCode": short_code}), 201
+    return jsonify({
+        "id": str(result.inserted_id),
+        "url": original_url,
+        "shortCode": short_code,
+        "createdAt": current_time,
+        "updatedAt": current_time
+    }), 201
 
 @app.route('/<short_code>', methods=['GET'])
 def redirect_to_url(short_code):
@@ -71,8 +91,11 @@ def get_url_details(short_code):
         return jsonify({"error": "Short URL not found"}), 404
 
     return jsonify({
+        "id": url_data["id"],  # Auto-incremented integer ID
         "url": url_data["url"],
         "shortCode": url_data["shortCode"],
+        "createdAt": url_data["createdAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),  # ISO 8601 format
+        "updatedAt": url_data["updatedAt"].strftime("%Y-%m-%dT%H:%M:%SZ"),  # ISO 8601 format
         "accessCount": url_data["accessCount"]
     }), 200
 
@@ -92,11 +115,29 @@ def update_short_url(short_code):
     if not new_url:
         return jsonify({"error": "New URL is required"}), 400
 
-    result = urls_collection.update_one({"shortCode": short_code}, {"$set": {"url": new_url}})
+    current_time = datetime.utcnow()
+    result = urls_collection.update_one(
+        {"shortCode": short_code},
+        {
+            "$set": {
+                "url": new_url,
+                "updatedAt": current_time
+            }
+        }
+    )
+
     if result.matched_count == 0:
         return jsonify({"error": "Short URL not found"}), 404
 
-    return jsonify({"message": "URL updated successfully"}), 200
+    url_data = find_url_by_short_code(short_code)
+    return jsonify({
+        "id": str(url_data["_id"]),
+        "url": url_data["url"],
+        "shortCode": url_data["shortCode"],
+        "createdAt": url_data["createdAt"],
+        "updatedAt": current_time,
+        "accessCount": url_data["accessCount"]
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
