@@ -10,6 +10,22 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["url_shortener"]
 urls_collection = db["urls"]
 
+# Add these helper functions after MongoDB connection setup
+def find_url_by_short_code(short_code):
+    """Find a URL document by its short code"""
+    return urls_collection.find_one({"shortCode": short_code})
+
+def find_url_by_original_url(original_url):
+    """Find a URL document by its original URL"""
+    return urls_collection.find_one({"url": original_url})
+
+def increment_access_count(short_code):
+    """Increment the access count for a URL"""
+    return urls_collection.update_one(
+        {"shortCode": short_code}, 
+        {"$inc": {"accessCount": 1}}
+    )
+
 # Utility function to generate a random short code
 def generate_short_code(length=6):
     characters = string.ascii_letters + string.digits
